@@ -1,6 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain, IpcMessageEvent } = require("electron");
 const path = require("path");
 const url = require("url");
+const fs = require('fs');
+const ytdl = require('ytdl-core');
 
 let win;
 
@@ -8,17 +10,9 @@ function createWindow() {
   win = new BrowserWindow({ width: 820, height: 700 });
   win.setMenu(null)
 
-  // load the dist folder from Angular
-  // win.loadURL(
-  //   url.format({
-  //     pathname: path.join(__dirname, `/dist/index.html`),
-  //     protocol: "file:",
-  //     slashes: true
-  //   })
-  // );
-
   // and load the index.html of the app.
   win.loadFile(path.join(__dirname, `/dist/index.html`))
+  win.webContents.openDevTools()
 
   // The following is optional and will open the DevTools:
   // win.webContents.openDevTools()
@@ -42,4 +36,21 @@ app.on("activate", () => {
   if (win === null) {
     createWindow();
   }
+});
+
+ipcMain.on('asynchronous-message', (event, arg) => {
+  console.log(arg) // prints "ping"
+  event.sender.send('asynchronous-reply', 'pong')
+})
+
+ipcMain.on('synchronous-message', (event, arg) => {
+  console.log(arg) // prints "ping"
+  event.returnValue = 'pong'
+})
+
+ipcMain.on('ping', (event, arg) => {
+  console.log(arg);
+  event.sender.send('pong');
+  ytdl(arg)
+  .pipe(fs.createWriteStream('video.mp4'))
 });

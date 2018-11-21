@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { IpcService } from '../service/ipc.service';
 
 @Component({
   selector: 'app-home',
@@ -7,9 +8,17 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
 
-  constructor() { }
+  constructor(private readonly _ipc: IpcService) { }
 
   ngOnInit() {
+  }
+
+  clickMessage = '';
+  public url : string = "";
+
+  onClickMe() {
+    this.clickMessage = 'You are my hero!'+this.url;
+    this._ipc.send('ping',this.url);
   }
 
 }
