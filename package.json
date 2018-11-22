@@ -29,7 +29,8 @@
     "font-awesome": "^4.7.0",
     "jquery": "^1.9.1",
     "popper.js": "^1.14.5",
-    "rxjs": "^6.0.0",
+    "rxjs": "^6.3.3",
+    "rxjs-compat": "^6.3.3",
     "youtube-dl": "^1.12.2",
     "ytdl": "^0.10.4",
     "zone.js": "^0.8.26"

@@ -1,6 +1,7 @@
-<div class="col-md-9 bg-primary" id="main">
-    <h1>Main Area</h1>
+<div class="col-md-12" id="main">
+    <h1>Paste Your Links</h1>
     <p>{{clickMessage}}</p>
     <input type="text" [(ngModel)]="url" class="form-control" id="vid_url" placeholder="Paste Url">
-    <button type="button" class="btn btn-primary" (click)="onClickMe()">DOWNLOAD</button>
+    <button type="button" class="btn" (click)="onClickMe()">DOWNLOAD</button>
+    <p>Progress : {{progress}}</p>
 </div>

@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { IpcService } from './service/ipc.service';
 
 @Component({
   selector: 'app-root',
@@ -9,17 +8,10 @@ import { IpcService } from './service/ipc.service';
 export class AppComponent implements OnInit {
   title = 'app';
 
-  constructor(private readonly _ipc: IpcService) {
-    this._ipc.on('pong', (event: Electron.IpcMessageEvent) => {
-      console.log('pong');
-    });
-
-    this._ipc.send('ping');
-    console.log('pong');
-   }
+  constructor() {}
 
   ngOnInit() {
-    console.log('pong');
+
   }
 
 }
