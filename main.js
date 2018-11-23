@@ -8,7 +8,7 @@ const readline = require('readline');
 let win;
 
 function createWindow() {
-    win = new BrowserWindow({ width: 820, height: 700 });
+    win = new BrowserWindow({ width: 950, height: 700 });
     win.setMenu(null)
 
     // and load the index.html of the app.
@@ -62,7 +62,7 @@ function downloadVideo(url, event) {
         video.on('progress', (chunkLength, downloaded, total) => {
             const floatDownloaded = downloaded / total;
             const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
-            event.sender.send('asynchronous-reply', `${(floatDownloaded * 100).toFixed(2)}% downloaded`);
+            event.sender.send('asynchronous-reply', `${(floatDownloaded * 100).toFixed(2)}%`);
         });
         video.on('end', () => {
 

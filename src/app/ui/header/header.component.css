@@ -1,0 +1,8 @@
+.menu-link:hover {
+    background-color: #0099ff;
+    cursor: pointer;
+}
+
+.menu-header {
+    cursor: pointer;
+}
