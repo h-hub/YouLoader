@@ -1,93 +1,55 @@
-<div class="col-md-12 px-0" id="main">
+<div class="col-md-12 px-0 border" id="main">
 
-    <div class="row">
+    <div class="row mt-2 mr-0">
         <div class="col-sm text-center">
             <h3>Paste Your Links</h3>
         </div>
     </div>
 
-    <div class="row justify-content-md-center mb-5">
-        <div class="col-8 "><input type="text" [(ngModel)]="url" [ngStyle]="styleThumbnail()" class="form-control form-control-lg d-inline-block"
-                id="vid_url" placeholder="Paste Url"></div>
-        <div class="col-2"><button type="button" class="btn w-100 h-100 d-inline-block" (click)="onClickMe()">ADD</button></div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm text-center">
-
+    <div class="row justify-content-md-center mb-5 mr-0">
+        <div class="col-8 ">
+            <input type="text text-sm-left" [(ngModel)]="url" [ngStyle]="styleThumbnail()" (keyup)="fetchThumbnail($event)" class="form-control form-control-lg d-inline-block"
+                id="vid_url" placeholder="Paste Url">
         </div>
+        <div class="col-2"><button type="button" class="btn w-100 h-100 d-inline-block" (click)="addVideo()">ADD</button></div>
     </div>
 
-    <!-- <p>{{clickMessage}}</p> -->
+    <table mat-table [(dataSource)]="dataSource" class="mat-elevation-z8">
 
-    <!-- <img src="{{thumbUrl}}"> -->
-    <!-- [style.background]="'url(' + thumbUrl + ')'"  -->
+        <!--- Note that these columns can be defined in any order.
+                  The actual rendered columns are set as a property on the row definition" -->
 
-    <table class="table table-hover bg-light">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped" role="progressbar" [style.width]="progress" aria-valuenow="25"
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" [style.width]="progress" aria-valuenow="25"
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" [style.width]="progress" aria-valuenow="25"
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" [style.width]="progress" aria-valuenow="25"
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" [style.width]="progress" aria-valuenow="25"
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
+        <!-- Position Column -->
+        <ng-container matColumnDef="position">
+            <th mat-header-cell *matHeaderCellDef> No. </th>
+            <td mat-cell *matCellDef="let element"> {{element.position}} </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="url">
+            <th mat-header-cell *matHeaderCellDef> URL </th>
+            <td mat-cell *matCellDef="let element"> {{element.url}} </td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="progress">
+            <th mat-header-cell *matHeaderCellDef> Progress </th>
+            <td mat-cell *matCellDef="let element"> {{element.progress}} 
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" [style.width]="element.progress" aria-valuenow="25"
+                        aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
+
 </div>

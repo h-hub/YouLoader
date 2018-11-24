@@ -1,6 +1,14 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { IpcService } from '../service/ipc.service';
 import { YouThumbService } from '../service/you-thumb.service';
+import { MatTableDataSource } from '@angular/material';
+
+export interface PeriodicElement {
+    position: number;
+    name: string;
+    url: string;
+    progress: string;
+}
 
 @Component({
     selector: 'app-home',
@@ -9,36 +17,55 @@ import { YouThumbService } from '../service/you-thumb.service';
 })
 export class HomeComponent implements OnInit {
 
+    displayedColumns: string[] = ['position', 'name', 'url', 'progress'];
+    ELEMENT_DATA: PeriodicElement[] = [];
+    dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+
     clickMessage = '';
     thumbUrl = '';
     public url: string = "";
     progress: string;
+    isValidInput = '';
+    title = '';
 
     constructor(private readonly _ipc: IpcService, private _ngzone: NgZone, private _youThumb: YouThumbService) { }
 
     ngOnInit() {
         this._ipc.on('asynchronous-reply')
-            .subscribe((message: string) => {
+            .subscribe((message: any) => {
                 this._ngzone.run(() => {
-                    this.progress = message;
+                    var objIndex = this.ELEMENT_DATA.findIndex((x => x.position === message.video_id));
+                    this.ELEMENT_DATA[objIndex].progress = message.progress;
+                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
                 });
+            });
+
+        this._ipc.on('sendVideoTitle')
+            .subscribe((message: any) => {
+                this.ELEMENT_DATA.push({ position: message.video_id , name: message.title, url: this.url, progress: '0%' });
+                this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                this._ipc.send('download', this.url);
+                this.url = "";
             });
     }
 
-    onClickMe() {
-        this.clickMessage = 'Downloading : ' + this.url;
-        this.thumbUrl = this._youThumb.getImage(this.url, 'small');
-        this._ipc.send('download', this.url);
+    addVideo() {
+        this._ipc.send('getVideoTitle', this.url);
     }
 
     styleThumbnail(): Object {
         return {
-            "background-size": "contain" ,
-            "background-position" : 'right',
+            "background-size": "contain",
+            "background-position": 'right',
             "background-repeat": "no-repeat",
             "background-origin": "content-box",
-            "background-image" : "url("+this.thumbUrl+")"
-        } 
+            "background-image": "url(" + this.thumbUrl + ")",
+            "font-size" : "15px"
+        }
     }
-    
+
+    fetchThumbnail(event: any) {
+        this.thumbUrl = this._youThumb.getImage(this.url, 'big');
+    }
+
 }

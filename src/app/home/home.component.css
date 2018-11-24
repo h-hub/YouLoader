@@ -7,3 +7,6 @@
     background-position: right;
     background-origin: content-box;
 } */
+table {
+    width: 100%;
+  }
