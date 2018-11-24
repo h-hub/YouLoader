@@ -44,3 +44,7 @@ ipcMain.on('download', (event, arg) => {
 ipcMain.on('getVideoTitle', (event, arg) => {
     youtTubeutilIns.getName(arg, event);
 });
+
+ipcMain.on('stopDownload', (event, arg) => {
+    youtTubeutilIns.stopDownload(arg, event);
+});

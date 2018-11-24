@@ -4,10 +4,11 @@ import { YouThumbService } from '../service/you-thumb.service';
 import { MatTableDataSource } from '@angular/material';
 
 export interface PeriodicElement {
-    position: number;
+    position: string;
     name: string;
     url: string;
     progress: string;
+    videoId: string;
 }
 
 @Component({
@@ -17,7 +18,7 @@ export interface PeriodicElement {
 })
 export class HomeComponent implements OnInit {
 
-    displayedColumns: string[] = ['position', 'name', 'url', 'progress'];
+    displayedColumns: string[] = ['position', 'name', 'url', 'progress', 'action'];
     ELEMENT_DATA: PeriodicElement[] = [];
     dataSource = new MatTableDataSource(this.ELEMENT_DATA);
 
@@ -27,6 +28,7 @@ export class HomeComponent implements OnInit {
     progress: string;
     isValidInput = '';
     title = '';
+    inpuError = '';
 
     constructor(private readonly _ipc: IpcService, private _ngzone: NgZone, private _youThumb: YouThumbService) { }
 
@@ -42,10 +44,24 @@ export class HomeComponent implements OnInit {
 
         this._ipc.on('sendVideoTitle')
             .subscribe((message: any) => {
-                this.ELEMENT_DATA.push({ position: message.video_id , name: message.title, url: this.url, progress: '0%' });
-                this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
-                this._ipc.send('download', this.url);
-                this.url = "";
+
+                if (!this.isVideoExist(message.video_id)) {
+                    this.ELEMENT_DATA.push({ position: message.video_id, name: message.title, url: this.url, progress: '0%', videoId: message.video_id });
+                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                    this._ipc.send('download', this.url);
+                    this.url = "";
+                } else {
+                    this.inpuError = "Link exists !";
+                }
+
+            });
+
+        this._ipc.on('removeFromList')
+            .subscribe((message: any) => {
+                this._ngzone.run(() => {
+                    this.ELEMENT_DATA = this.ELEMENT_DATA.filter(x => x.position !== message.video_id);
+                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                });
             });
     }
 
@@ -60,12 +76,27 @@ export class HomeComponent implements OnInit {
             "background-repeat": "no-repeat",
             "background-origin": "content-box",
             "background-image": "url(" + this.thumbUrl + ")",
-            "font-size" : "15px"
+            "font-size": "15px"
         }
     }
 
     fetchThumbnail(event: any) {
         this.thumbUrl = this._youThumb.getImage(this.url, 'big');
+    }
+
+    stopDownload(videoId: string) {
+        this._ipc.send('stopDownload', videoId);
+    }
+
+    isVideoExist(videoId: string): boolean {
+
+        var objIndex = this.ELEMENT_DATA.findIndex((x => x.position === videoId));
+
+        if (objIndex == -1) {
+            return false;
+        }
+
+        return true;
     }
 
 }
