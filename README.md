@@ -1,7 +1,7 @@
 # YouLoader [in progress (Learning Electrone)]
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.8. And Electrone
-
+![alt text](https://drive.google.com/open?id=11EdwLj35ObSMw89ss4JyLDNY6PGTK66W)
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
