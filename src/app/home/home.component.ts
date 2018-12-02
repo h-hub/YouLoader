@@ -34,6 +34,14 @@ export class HomeComponent implements OnInit {
     constructor(private readonly _ipc: IpcService, private _ngzone: NgZone, private _youThumb: YouThumbService) { }
 
     ngOnInit() {
+
+        this._ipc.on('initData')
+            .subscribe((message: any) => {
+                this._ngzone.run(() => {
+                    this.dataSource = new MatTableDataSource(message);
+                });
+            });
+
         this._ipc.on('asynchronous-reply')
             .subscribe((message: any) => {
                 this._ngzone.run(() => {
@@ -51,10 +59,13 @@ export class HomeComponent implements OnInit {
             .subscribe((message: any) => {
 
                 if (!this.isVideoExist(message.video_id)) {
-                    this.ELEMENT_DATA.push({ position: message.video_id, name: message.title, url: this.url, progress: '0%', videoId: message.video_id });
+                    var data = { position: message.video_id, name: message.title, url: this.url, progress: '0%', videoId: message.video_id };
+                    this.ELEMENT_DATA.push(data);
                     this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
-                    this._ipc.send('download', this.url);
+
+                    this._ipc.send('download', {"url" : this.url, "fileInfo" : data });
                     this.inpuError = "";
+
                 } else {
                     this.inpuError = "Link exists !";
                 }

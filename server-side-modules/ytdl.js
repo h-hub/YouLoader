@@ -3,17 +3,26 @@ const fs = require('fs');
 const ytdl = require('ytdl-core');
 const readline = require('readline');
 const path = require("path");
+const Audiofile = require('./audiofile');
 const openedStreams = [];
+
+
 
 function youtTubeutil() {
 
-    this.downloadVideo = function (url, event) {
+    this.downloadVideo = function (data, event, store) {
 
-        const video = ytdl(url, { filter: 'audioonly' });
+        const video = ytdl(data.url, { filter: 'audioonly' });
 
-        ytdl.getInfo(url, function (err, info) {
+        ytdl.getInfo(data.url, function (err, info) {
 
             var title = info.title.replace(/[\\/:"*?<>|]/g, '');
+
+            var mp3file = new Audiofile( data.fileInfo.position, data.fileInfo.name, data.fileInfo.url, data.fileInfo.progress, data.fileInfo.action );
+
+            var existingFiles = store.get("mp3files");
+            existingFiles.push(mp3file);
+            store.set("mp3files", existingFiles);
 
             const output = path.resolve('./mp3s', title + '.mp3');
             const writeStream = fs.createWriteStream(output);

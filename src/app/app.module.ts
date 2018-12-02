@@ -10,21 +10,6 @@ import { UiModule } from './ui/ui.module';
 import { MaterialsModule } from './ui/materials/materials.module';
 import { AboutComponent } from './about/about/about.component';
 
-const appRoutes: Routes = [
-    {
-        path: '',
-        redirectTo: 'home',
-        pathMatch: 'full'
-      },
-      {
-        path: 'home',
-        component: HomeComponent
-      },
-      {
-        path: 'about',
-        component: AboutComponent
-      }
-];
 
 @NgModule({
     declarations: [
@@ -33,9 +18,6 @@ const appRoutes: Routes = [
         AboutComponent
     ],
     imports: [
-        RouterModule.forRoot(
-            appRoutes
-        ),
         BrowserModule,
         UiModule,
         FormsModule,

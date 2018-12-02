@@ -1,29 +1,41 @@
-const { app, BrowserWindow, ipcMain, IpcMessageEvent } = require("electron");
+const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
 const path = require("path");
 const youtTubeutil = require('./server-side-modules/ytdl');
+const Store = require('./server-side-modules/store');
 const youtTubeutilIns = new youtTubeutil();
 const url = require('url');
 
 let win;
 
+const store = new Store({
+    configName: 'user-preferences',
+    defaults: {
+        windowBounds: { width: 800, height: 600 },
+        mp3files: []
+    }
+});
+
 function createWindow() {
-    win = new BrowserWindow({ width: 1500, height: 700 });
+
+    let { width, height } = store.get('windowBounds');
+    win = new BrowserWindow({ width, height });
+
+    win.on('resize', () => {
+        let { width, height } = win.getBounds();
+        store.set('windowBounds', { width, height });
+    });
+
     win.setMenu(null)
 
-    // and load the index.html of the app.
-    win.loadFile(path.join(__dirname, `/dist/index.html`))
+    win.loadFile(path.join(__dirname, `/dist/index.html`));
 
-    // win.loadURL(url.format({
-    //     pathname: path.join(__dirname, '/dist/index.html'),
-    //     protocol: 'file:',
-    //     slashes: true,
-    //     hash: '/about'
-    //   }));
+    win.webContents.on('did-finish-load', () => {
+        win.webContents.send('initData', store.get("mp3files"))
+    });
 
-    win.webContents.openDevTools()
 
-    // The following is optional and will open the DevTools:
-    // win.webContents.openDevTools()
+
+    win.webContents.openDevTools();
 
     win.on("closed", () => {
         win = null;
@@ -47,7 +59,7 @@ app.on("activate", () => {
 });
 
 ipcMain.on('download', (event, arg) => {
-    youtTubeutilIns.downloadVideo(arg, event);
+    youtTubeutilIns.downloadVideo(arg, event, store);
 });
 
 ipcMain.on('getVideoTitle', (event, arg) => {
@@ -61,9 +73,10 @@ ipcMain.on('stopDownload', (event, arg) => {
 ipcMain.on('load-page', (event, arg) => {
 
     let child = new BrowserWindow({ parent: win, modal: true, show: false })
-    child.loadURL(path.join(__dirname, `/dist/YouLoaderFileUtil/index.html`))
+    child.loadURL(path.join(__dirname, `/fileutil/dist/fileutil/index.html`))
     child.once('ready-to-show', () => {
         child.show()
     })
 
 });
+
