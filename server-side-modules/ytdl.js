@@ -13,10 +13,11 @@ function youtTubeutil() {
 
         ytdl.getInfo(url, function (err, info) {
 
-            var title = info.title;
+            var title = info.title.replace(/[\\/:"*?<>|]/g, '');
 
             const output = path.resolve('./mp3s', title + '.mp3');
             const writeStream = fs.createWriteStream(output);
+            
 
             let starttime;
 
@@ -35,7 +36,10 @@ function youtTubeutil() {
                         "progress": `${(floatDownloaded * 100).toFixed(2)}%`
                     });
             });
+
             openedStreams.push({ "video_id": info.video_id, "stream": writeStream, "video": video });
+            //video._destroy
+            
         });
     }
 
@@ -56,8 +60,8 @@ function youtTubeutil() {
 
     this.stopDownload = function (video_id, event) {
         var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
-        openedStreams[streamIndex].video.destroy();
-        openedStreams[streamIndex].stream.destroy();
+        openedStreams[streamIndex].video.pause();
+        openedStreams.splice(streamIndex, 1);
 
         event.sender.send('removeFromList',
             {

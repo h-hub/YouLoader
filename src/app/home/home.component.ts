@@ -29,6 +29,7 @@ export class HomeComponent implements OnInit {
     isValidInput = '';
     title = '';
     inpuError = '';
+    linkeadded: boolean = false;
 
     constructor(private readonly _ipc: IpcService, private _ngzone: NgZone, private _youThumb: YouThumbService) { }
 
@@ -37,8 +38,12 @@ export class HomeComponent implements OnInit {
             .subscribe((message: any) => {
                 this._ngzone.run(() => {
                     var objIndex = this.ELEMENT_DATA.findIndex((x => x.position === message.video_id));
-                    this.ELEMENT_DATA[objIndex].progress = message.progress;
-                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+
+                    if(objIndex != -1){
+                        this.ELEMENT_DATA[objIndex].progress = message.progress;
+                        this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                    }
+                    
                 });
             });
 
@@ -49,10 +54,13 @@ export class HomeComponent implements OnInit {
                     this.ELEMENT_DATA.push({ position: message.video_id, name: message.title, url: this.url, progress: '0%', videoId: message.video_id });
                     this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
                     this._ipc.send('download', this.url);
-                    this.url = "";
+                    this.inpuError = "";
                 } else {
                     this.inpuError = "Link exists !";
                 }
+                this.linkeadded = false;
+                this.thumbUrl = "";
+                this.url = "";
 
             });
 
@@ -66,6 +74,7 @@ export class HomeComponent implements OnInit {
     }
 
     addVideo() {
+        this.linkeadded = true;
         this._ipc.send('getVideoTitle', this.url);
     }
 

@@ -1,7 +1,28 @@
-  <nav class="nav d-block md-5 flex-column navbar-text text-white">
+<nav class="nav d-block md-5 flex-column navbar-text text-white">
     <h4 class="nav-link menu-header"><i class="fa fa-heart"></i> YouLoader</h4>
-    <h6 class="nav-link menu-link active" href="#">Active</h6>
-    <h6 class="nav-link menu-link" href="#">Link</h6>
-    <h6 class="nav-link menu-link" href="#">Link</h6>
-    <h6 class="nav-link menu-link disabled" href="#">Disabled</h6>
-  </nav>
+    <h6 class="nav-link menu-link" (click)="goToPage()">Downloaded</h6>
+    <h6 class="nav-link menu-link" data-toggle="modal" data-target="#exampleModalCenter">About</h6>
+</nav>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">About YouLoader</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    YouLoader [in progress (Learning Electrone)]
+                    <br>
+                    This project was generated with Angular CLI version 6.0.8. And Electrone
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
