@@ -10,23 +10,33 @@ const openedStreams = [];
 
 function youtTubeutil() {
 
-    this.downloadVideo = function (data, event, store) {
+    this.downloadVideo = function (url, event, store) {
 
-        const video = ytdl(data.url, { filter: 'audioonly' });
+        const video = ytdl(url, { filter: 'audioonly' });
 
-        ytdl.getInfo(data.url, function (err, info) {
+        ytdl.getInfo(url, function (err, info) {
 
             var title = info.title.replace(/[\\/:"*?<>|]/g, '');
 
-            var mp3file = new Audiofile( data.fileInfo.position, data.fileInfo.name, data.fileInfo.url, data.fileInfo.progress, data.fileInfo.action );
+            var existingFiles = store.get("mp3files");
+            var existingFilesIndex = existingFiles.findIndex((x => x.position === info.video_id));
+
+            if (existingFilesIndex != -1) {
+                event.sender.send('addingLink', { "linkAdded": false, "linkExists": true });
+                return;
+            }
+
+            const output = path.resolve('./mp3s', title + '.mp3');
+            const writeStream = fs.createWriteStream(output, { mode: 0o755 });
+
+            var mp3file = new Audiofile(info.video_id, info.title, url, '0%', '', output);
 
             var existingFiles = store.get("mp3files");
             existingFiles.push(mp3file);
             store.set("mp3files", existingFiles);
 
-            const output = path.resolve('./mp3s', title + '.mp3');
-            const writeStream = fs.createWriteStream(output);
-            
+            event.sender.send('addingLink', { "linkAdded": false, "linkExists": false });
+
 
             let starttime;
 
@@ -39,44 +49,54 @@ function youtTubeutil() {
             video.on('progress', (chunkLength, downloaded, total) => {
                 const floatDownloaded = downloaded / total;
                 const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
-                event.sender.send('asynchronous-reply',
-                    {
-                        "video_id": info.video_id,
-                        "progress": `${(floatDownloaded * 100).toFixed(2)}%`
-                    });
+
+                var existingFiles = store.get("mp3files");
+                var existingFilesIndex = existingFiles.findIndex((x => x.position === info.video_id));
+                if (existingFilesIndex != -1) {
+                    existingFiles[existingFilesIndex].progress = `${(floatDownloaded * 100).toFixed(2)}%`;
+                }
+
+                store.set("mp3files", existingFiles);
+
+                event.sender.send('initData', store.get("mp3files"));
             });
 
-            openedStreams.push({ "video_id": info.video_id, "stream": writeStream, "video": video });
-            //video._destroy
-            
+            openedStreams.push({ "video_id": info.video_id, "stream": writeStream, "video": video, "output": output });
+
         });
     }
 
-    this.getName = function (url, event) {
+    this.stopDownload = function (video_id, event, store) {
 
-        var title = 'Not found';
-
-        ytdl.getInfo(url, function (err, info) {
-            event.sender.send('sendVideoTitle',
-                {
-                    "video_id": info.video_id,
-                    "title": info.title
-                });
-        });
-
-        return title;
-    }
-
-    this.stopDownload = function (video_id, event) {
         var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
         openedStreams[streamIndex].video.pause();
-        openedStreams.splice(streamIndex, 1);
 
-        event.sender.send('removeFromList',
-            {
-                "video_id": video_id,
-                "progress": `0%`
-            });
+        event.sender.send('initData', store.get("mp3files"));
+    }
+
+    this.deleteDownload = function (video_id, event, store) {
+
+        var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+
+        if (streamIndex != -1) {
+            openedStreams[streamIndex].video.pause();
+            openedStreams[streamIndex].stream.end();
+            openedStreams.splice(streamIndex, 1);
+        }
+
+        var existingFiles = store.get("mp3files");
+        var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+
+        fs.unlink(existingFiles[existingFilesIndex].path, (err) => {
+            if (err) throw err;
+            console.log('successfully deleted');
+        });
+
+        existingFiles.splice(existingFilesIndex, 1);
+
+        store.set("mp3files", existingFiles);
+
+        event.sender.send('initData', store.get("mp3files"));
     }
 }
 

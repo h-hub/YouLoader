@@ -39,54 +39,30 @@ export class HomeComponent implements OnInit {
             .subscribe((message: any) => {
                 this._ngzone.run(() => {
                     this.dataSource = new MatTableDataSource(message);
+                    this.linkeadded = false;
                 });
             });
 
-        this._ipc.on('asynchronous-reply')
+        this._ipc.on('addingLink')
             .subscribe((message: any) => {
                 this._ngzone.run(() => {
-                    var objIndex = this.ELEMENT_DATA.findIndex((x => x.position === message.video_id));
+                    this.linkeadded = message.linkAdded;
 
-                    if(objIndex != -1){
-                        this.ELEMENT_DATA[objIndex].progress = message.progress;
-                        this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                    if(message.linkExists){
+                        this.inpuError = "Link exists !";
+                    } else {
+                        this.inpuError = "";
                     }
-                    
-                });
-            });
 
-        this._ipc.on('sendVideoTitle')
-            .subscribe((message: any) => {
-
-                if (!this.isVideoExist(message.video_id)) {
-                    var data = { position: message.video_id, name: message.title, url: this.url, progress: '0%', videoId: message.video_id };
-                    this.ELEMENT_DATA.push(data);
-                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
-
-                    this._ipc.send('download', {"url" : this.url, "fileInfo" : data });
-                    this.inpuError = "";
-
-                } else {
-                    this.inpuError = "Link exists !";
-                }
-                this.linkeadded = false;
-                this.thumbUrl = "";
-                this.url = "";
-
-            });
-
-        this._ipc.on('removeFromList')
-            .subscribe((message: any) => {
-                this._ngzone.run(() => {
-                    this.ELEMENT_DATA = this.ELEMENT_DATA.filter(x => x.position !== message.video_id);
-                    this.dataSource = new MatTableDataSource(this.ELEMENT_DATA);
+                    this.thumbUrl = "";
+                    this.url = "";
                 });
             });
     }
 
     addVideo() {
         this.linkeadded = true;
-        this._ipc.send('getVideoTitle', this.url);
+        this._ipc.send('download', this.url);
     }
 
     styleThumbnail(): Object {
@@ -106,6 +82,10 @@ export class HomeComponent implements OnInit {
 
     stopDownload(videoId: string) {
         this._ipc.send('stopDownload', videoId);
+    }
+
+    deleteDownload(videoId: string) {
+        this._ipc.send('deleteDownload', videoId);
     }
 
     isVideoExist(videoId: string): boolean {

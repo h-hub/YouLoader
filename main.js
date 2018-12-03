@@ -33,8 +33,6 @@ function createWindow() {
         win.webContents.send('initData', store.get("mp3files"))
     });
 
-
-
     win.webContents.openDevTools();
 
     win.on("closed", () => {
@@ -62,12 +60,12 @@ ipcMain.on('download', (event, arg) => {
     youtTubeutilIns.downloadVideo(arg, event, store);
 });
 
-ipcMain.on('getVideoTitle', (event, arg) => {
-    youtTubeutilIns.getName(arg, event);
+ipcMain.on('stopDownload', (event, arg) => {
+    youtTubeutilIns.stopDownload(arg, event, store);
 });
 
-ipcMain.on('stopDownload', (event, arg) => {
-    youtTubeutilIns.stopDownload(arg, event);
+ipcMain.on('deleteDownload', (event, arg) => {
+    youtTubeutilIns.deleteDownload(arg, event, store);
 });
 
 ipcMain.on('load-page', (event, arg) => {
