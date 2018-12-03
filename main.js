@@ -64,6 +64,10 @@ ipcMain.on('stopDownload', (event, arg) => {
     youtTubeutilIns.stopDownload(arg, event, store);
 });
 
+ipcMain.on('resumeDownload', (event, arg) => {
+    youtTubeutilIns.resumeDownload(arg, event, store);
+});
+
 ipcMain.on('deleteDownload', (event, arg) => {
     youtTubeutilIns.deleteDownload(arg, event, store);
 });

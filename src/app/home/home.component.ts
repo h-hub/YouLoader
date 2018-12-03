@@ -84,6 +84,10 @@ export class HomeComponent implements OnInit {
         this._ipc.send('stopDownload', videoId);
     }
 
+    resumeDownload(videoId: string) {
+        this._ipc.send('resumeDownload', videoId);
+    }
+
     deleteDownload(videoId: string) {
         this._ipc.send('deleteDownload', videoId);
     }

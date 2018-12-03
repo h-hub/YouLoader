@@ -66,6 +66,14 @@ function youtTubeutil() {
         });
     }
 
+    this.resumeDownload = function (video_id, event, store) {
+
+        var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+        openedStreams[streamIndex].video.resume();
+
+        event.sender.send('initData', store.get("mp3files"));
+    }
+
     this.stopDownload = function (video_id, event, store) {
 
         var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
