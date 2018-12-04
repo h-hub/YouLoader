@@ -47,6 +47,15 @@ app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
+    
+    var mp3files = store.get("mp3files");
+
+    mp3files.forEach(function (file) {
+        if(file.status == "IN_PROGRESS"){
+            youtTubeutilIns.setStatus(file.position, "ABORTED", store);
+        }
+      }); 
+
 });
 
 // initialize the app's main window
