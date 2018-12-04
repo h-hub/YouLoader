@@ -65,10 +65,7 @@ function youtTubeutil() {
             });
 
             video.on('end', () => {
-                var existingFiles = store.get("mp3files");
-                var existingFilesIndex = existingFiles.findIndex((x => x.position === info.video_id));
-                existingFiles[existingFilesIndex].status = "COMPLETED";
-                store.set("mp3files", existingFiles);
+                changeStatus(info.video_id, "COMPLETED", store);
             });
 
             openedStreams.push({ "video_id": info.video_id, "stream": writeStream, "video": video, "output": output });
@@ -93,8 +90,7 @@ function youtTubeutil() {
 
     this.stopDownload = function (video_id, event, store) {
 
-        var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
-        openedStreams[streamIndex].video.pause();
+        getVideoById(video_id).pause();
 
         event.sender.send('initData', store.get("mp3files"));
     }
@@ -125,11 +121,21 @@ function youtTubeutil() {
     }
 
     this.setStatus = function (video_id, status, store) {
-        var existingFiles = store.get("mp3files");
-        var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
-        existingFiles[existingFilesIndex].status = status;
-        store.set("mp3files", existingFiles);
+        changeStatus(video_id, status, store);
     }
 }
 
+function changeStatus(video_id, status, store){
+    var existingFiles = store.get("mp3files");
+    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    existingFiles[existingFilesIndex].status = status;
+    store.set("mp3files", existingFiles);
+}
+
+function getVideoById(video_id){
+    var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+    return openedStreams[streamIndex].video;
+}
+
 module.exports = youtTubeutil;
+
