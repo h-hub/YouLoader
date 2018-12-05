@@ -32,13 +32,10 @@ function youtTubeutil() {
 
     this.resumeDownload = function (video_id, event) {
 
-        var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
-        var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
-
-        if (streamIndex != -1) {
-            openedStreams[streamIndex].video.resume();
-        } else if (!isVideoExist(video_id)) {
-            this.downloadVideo(existingFiles[existingFilesIndex].url, event, store);
+        if (isVideoExistInStream(video_id)) {
+            getVideoByVideoIdFromStream(video_id).resume();
+        } else if (isVideoExist(video_id)) {
+            this.downloadVideo(getUrlByVideoIdFromStore(video_id), event);
         }
 
         event.sender.send('initData', store.get("mp3files"));
@@ -53,14 +50,14 @@ function youtTubeutil() {
 
     this.deleteDownload = function (video_id, event) {
 
-        var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+        var streamIndex = getStreamIndexByVideoId(video_id);
 
         if (streamIndex != -1) {
             openedStreams[streamIndex].video.pause();
             openedStreams[streamIndex].stream.end();
             openedStreams.splice(streamIndex, 1);
         }
-        var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+        var existingFilesIndex = getStoreIndexByVideoId(video_id);
 
         fs.unlink(existingFiles[existingFilesIndex].path, (err) => {
             if (err) throw err;
@@ -79,19 +76,19 @@ function youtTubeutil() {
 }
 
 function changeStatus(video_id, status) {
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
     existingFiles[existingFilesIndex].status = status;
     store.set("mp3files", existingFiles);
 }
 
 function getVideoById(video_id) {
-    var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+    var streamIndex = getStreamIndexByVideoId(video_id);
     return openedStreams[streamIndex].video;
 }
 
 function isValidLink(video_id) {
 
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
 
     if (existingFilesIndex != -1 && existingFiles[existingFilesIndex].status != "ABORTED") {
         return false;
@@ -103,9 +100,20 @@ function isValidLink(video_id) {
 
 function isVideoExist(video_id) {
 
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
 
     if (existingFilesIndex == -1) {
+        return false;
+    }
+
+    return true;
+}
+
+function isVideoExistInStream(video_id) {
+
+    var streamIndex = getStreamIndexByVideoId(video_id);
+
+    if (streamIndex == -1) {
         return false;
     }
 
@@ -141,6 +149,7 @@ function startDownload(info, url, event) {
     event.sender.send('addingLink', { "linkAdded": false, "linkExists": false });
 
     video.pipe(writeStream);
+    changeStatus(info.video_id, "IN_PROGRESS");
 
     handleVideoEvents(video, event, info);
 
@@ -159,7 +168,7 @@ function handleVideoEvents(video, event, info) {
         const floatDownloaded = downloaded / total;
         const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
 
-        var existingFilesIndex = existingFiles.findIndex((x => x.position === info.video_id));
+        var existingFilesIndex = getStoreIndexByVideoId(info.video_id);
         if (existingFilesIndex != -1) {
             existingFiles[existingFilesIndex].progress = `${(floatDownloaded * 100).toFixed(2)}%`;
         }
@@ -175,6 +184,25 @@ function handleVideoEvents(video, event, info) {
 
 }
 
+function getUrlByVideoIdFromStore(video_id){
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
+    return existingFiles[existingFilesIndex].url;
+}
+
+function getVideoByVideoIdFromStream(video_id){
+    var streamIndex = getStreamIndexByVideoId(video_id);
+    return openedStreams[streamIndex].video;
+}
+
+function getStreamIndexByVideoId(video_id){
+    var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+    return streamIndex;
+}
+
+function getStoreIndexByVideoId(video_id){
+    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    return existingFilesIndex;
+}
 
 module.exports = youtTubeutil;
 
