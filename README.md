@@ -2,7 +2,7 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.8. And Electrone
 
-![UI](https://harshajayamanna.com/wp-content/uploads/2018/11/youLoader.png)
+![UI](https://harshajayamanna.com/wp-content/uploads/2018/12/youloader_ui.png)
 
 ## Development server
 
