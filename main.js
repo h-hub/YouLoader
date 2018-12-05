@@ -30,7 +30,7 @@ function createWindow() {
     win.loadFile(path.join(__dirname, `/dist/index.html`));
 
     win.webContents.on('did-finish-load', () => {
-        win.webContents.send('initData', store.get("mp3files"))
+        win.webContents.send('initData', store.get("mp3files"));
     });
 
     win.webContents.openDevTools();
@@ -47,14 +47,14 @@ app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
-    
+
     var mp3files = store.get("mp3files");
 
     mp3files.forEach(function (file) {
-        if(file.status == "IN_PROGRESS"){
-            youtTubeutilIns.setStatus(file.position, "ABORTED", store);
+        if (file.status == "IN_PROGRESS") {
+            youtTubeutilIns.setStatus(file.position, "ABORTED");
         }
-      }); 
+    });
 
 });
 
@@ -66,19 +66,19 @@ app.on("activate", () => {
 });
 
 ipcMain.on('download', (event, arg) => {
-    youtTubeutilIns.downloadVideo(arg, event, store);
+    youtTubeutilIns.downloadVideo(arg, event);
 });
 
 ipcMain.on('stopDownload', (event, arg) => {
-    youtTubeutilIns.stopDownload(arg, event, store);
+    youtTubeutilIns.stopDownload(arg, event);
 });
 
 ipcMain.on('resumeDownload', (event, arg) => {
-    youtTubeutilIns.resumeDownload(arg, event, store);
+    youtTubeutilIns.resumeDownload(arg, event);
 });
 
 ipcMain.on('deleteDownload', (event, arg) => {
-    youtTubeutilIns.deleteDownload(arg, event, store);
+    youtTubeutilIns.deleteDownload(arg, event);
 });
 
 ipcMain.on('load-page', (event, arg) => {
