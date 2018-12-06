@@ -1,7 +1,5 @@
-const url = require("url");
 const fs = require('fs');
 const ytdl = require('ytdl-core');
-const readline = require('readline');
 const path = require("path");
 const Audiofile = require('./audiofile');
 const openedStreams = [];
@@ -34,7 +32,7 @@ function youtTubeutil() {
 
         if (isVideoExistInStream(video_id)) {
             getVideoByVideoIdFromStream(video_id).resume();
-        } else if (isVideoExist(video_id)) {
+        } else if (isVideoExistInStore(video_id)) {
             this.downloadVideo(getUrlByVideoIdFromStore(video_id), event);
         }
 
@@ -60,10 +58,6 @@ function youtTubeutil() {
 
         deleteVideoFromFile(video_id);
         event.sender.send('initData', store.get("mp3files"));
-    }
-
-    this.setStatus = function (video_id, status) {
-        changeStatus(video_id, status);
     }
 
     this.prepareToExit = function () {
@@ -103,7 +97,7 @@ function isValidLink(video_id) {
 
 }
 
-function isVideoExist(video_id) {
+function isVideoExistInStore(video_id) {
 
     var existingFilesIndex = getStoreIndexByVideoId(video_id);
 
@@ -130,7 +124,6 @@ function createMp3File(video_id, title, url, output) {
     var mp3file = new Audiofile(video_id, title, url, '0%', '', output, 'IN_PROGRESS');
 
     existingFiles.push(mp3file);
-    store.set("mp3files", existingFiles);
 
 }
 
@@ -147,7 +140,7 @@ function startDownload(info, url, event) {
     const output = path.resolve('./mp3s', title + '.mp3');
     const writeStream = fs.createWriteStream(output, { mode: 0o755 });
 
-    if (!isVideoExist(info.video_id)) {
+    if (!isVideoExistInStore(info.video_id)) {
         createMp3File(info.video_id, info.title, url, output);
     }
 
@@ -173,9 +166,9 @@ function handleVideoEvents(video, event, info) {
         const floatDownloaded = downloaded / total;
         const downloadedMinutes = (Date.now() - starttime) / 1000 / 60;
 
-        var existingFilesIndex = getStoreIndexByVideoId(info.video_id);
-        if (existingFilesIndex != -1) {
-            existingFiles[existingFilesIndex].progress = `${(floatDownloaded * 100).toFixed(2)}%`;
+        if (isVideoExistInStore(info.video_id)) {
+            setDownloadProgress(floatDownloaded, info.video_id);
+            
         }
 
         store.set("mp3files", existingFiles);
@@ -223,7 +216,7 @@ function getStreamIndexByVideoId(video_id) {
 }
 
 function getPathByVideoId(video_id) {
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
     return existingFiles[existingFilesIndex].path;
 }
 
@@ -243,8 +236,13 @@ function deleteStream(video_id) {
 }
 
 function deleteVideoFromFile(video_id) {
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
     existingFiles.splice(existingFilesIndex, 1);
+}
+
+function setDownloadProgress(floatDownloaded, video_id){
+    var existingFilesIndex = getStoreIndexByVideoId(video_id);
+    existingFiles[existingFilesIndex].progress = `${(floatDownloaded * 100).toFixed(2)}%`;
 }
 
 module.exports = youtTubeutil;
