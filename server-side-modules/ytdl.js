@@ -50,28 +50,33 @@ function youtTubeutil() {
 
     this.deleteDownload = function (video_id, event) {
 
-        var streamIndex = getStreamIndexByVideoId(video_id);
-
-        if (streamIndex != -1) {
-            openedStreams[streamIndex].video.pause();
-            openedStreams[streamIndex].stream.end();
-            openedStreams.splice(streamIndex, 1);
+        if (isVideoExistInStream(video_id)) {
+            deleteStream(video_id);
         }
-        var existingFilesIndex = getStoreIndexByVideoId(video_id);
 
-        fs.unlink(existingFiles[existingFilesIndex].path, (err) => {
+        fs.unlink(getPathByVideoId(video_id), (err) => {
             if (err) throw err;
         });
 
-        existingFiles.splice(existingFilesIndex, 1);
-
-        store.set("mp3files", existingFiles);
-
+        deleteVideoFromFile(video_id);
         event.sender.send('initData', store.get("mp3files"));
     }
 
     this.setStatus = function (video_id, status) {
         changeStatus(video_id, status);
+    }
+
+    this.prepareToExit = function () {
+
+        openedStreams.forEach(function (stream) {
+            stream.video.pause();
+        });
+
+        existingFiles.forEach(function (file) {
+            if (file.status == "IN_PROGRESS") {
+                changeStatus(file.position, "ABORTED");
+            }
+        });
     }
 }
 
@@ -184,24 +189,62 @@ function handleVideoEvents(video, event, info) {
 
 }
 
-function getUrlByVideoIdFromStore(video_id){
+function getUrlByVideoIdFromStore(video_id) {
+
     var existingFilesIndex = getStoreIndexByVideoId(video_id);
     return existingFiles[existingFilesIndex].url;
+
 }
 
-function getVideoByVideoIdFromStream(video_id){
+function getVideoByVideoIdFromStream(video_id) {
+
     var streamIndex = getStreamIndexByVideoId(video_id);
     return openedStreams[streamIndex].video;
+
 }
 
-function getStreamIndexByVideoId(video_id){
+function getStreamVideoIdFromStream(video_id) {
+
+    var streamIndex = getStreamIndexByVideoId(video_id);
+    return openedStreams[streamIndex].stream;
+
+}
+
+function removeVideoFromStream(video_id) {
+    var streamIndex = getStreamIndexByVideoId(video_id);
+    openedStreams.splice(streamIndex, 1);
+}
+
+function getStreamIndexByVideoId(video_id) {
+
     var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
     return streamIndex;
+
 }
 
-function getStoreIndexByVideoId(video_id){
+function getPathByVideoId(video_id) {
+    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    return existingFiles[existingFilesIndex].path;
+}
+
+function getStoreIndexByVideoId(video_id) {
+
     var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
     return existingFilesIndex;
+
+}
+
+function deleteStream(video_id) {
+
+    getVideoByVideoIdFromStream(video_id).pause();
+    getStreamVideoIdFromStream(video_id).end();
+    removeVideoFromStream(video_id);
+
+}
+
+function deleteVideoFromFile(video_id) {
+    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    existingFiles.splice(existingFilesIndex, 1);
 }
 
 module.exports = youtTubeutil;

@@ -36,6 +36,7 @@ function createWindow() {
     win.webContents.openDevTools();
 
     win.on("closed", () => {
+        youtTubeutilIns.prepareToExit();
         win = null;
     });
 }
@@ -44,17 +45,10 @@ app.on("ready", createWindow);
 
 // on macOS, closing the window doesn't quit the app
 app.on("window-all-closed", () => {
+
     if (process.platform !== "darwin") {
         app.quit();
     }
-
-    var mp3files = store.get("mp3files");
-
-    mp3files.forEach(function (file) {
-        if (file.status == "IN_PROGRESS") {
-            youtTubeutilIns.setStatus(file.position, "ABORTED");
-        }
-    });
 
 });
 
