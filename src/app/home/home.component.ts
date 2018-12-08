@@ -4,11 +4,11 @@ import { YouThumbService } from '../service/you-thumb.service';
 import { MatTableDataSource } from '@angular/material';
 
 export interface PeriodicElement {
-    position: string;
+    videoId: string;
     name: string;
     url: string;
     progress: string;
-    videoId: string;
+    status: string;
 }
 
 @Component({
@@ -18,7 +18,7 @@ export interface PeriodicElement {
 })
 export class HomeComponent implements OnInit {
 
-    displayedColumns: string[] = ['position', 'name', 'url', 'progress', 'action'];
+    displayedColumns: string[] = ['videoId', 'name', 'url', 'progress', 'status'];
     ELEMENT_DATA: PeriodicElement[] = [];
     dataSource = new MatTableDataSource(this.ELEMENT_DATA);
 
@@ -94,7 +94,7 @@ export class HomeComponent implements OnInit {
 
     isVideoExist(videoId: string): boolean {
 
-        var objIndex = this.ELEMENT_DATA.findIndex((x => x.position === videoId));
+        var objIndex = this.ELEMENT_DATA.findIndex((x => x.videoId === videoId));
 
         if (objIndex == -1) {
             return false;

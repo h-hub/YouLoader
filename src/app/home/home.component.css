@@ -13,4 +13,5 @@ table {
 
 .button-row button, .button-row a {
     margin-right: 8px;
+    min-width: 15px;
 }

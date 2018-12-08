@@ -32,6 +32,7 @@ function youtTubeutil() {
 
         if (isVideoExistInStream(video_id)) {
             getVideoByVideoIdFromStream(video_id).resume();
+            changeStatus(video_id, "IN_PROGRESS");
         } else if (isVideoExistInStore(video_id)) {
             this.downloadVideo(getUrlByVideoIdFromStore(video_id), event);
         }
@@ -42,7 +43,7 @@ function youtTubeutil() {
     this.stopDownload = function (video_id, event) {
 
         getVideoById(video_id).pause();
-
+        changeStatus(video_id, "STOPPED");
         event.sender.send('initData', store.get("mp3files"));
     }
 
@@ -67,8 +68,8 @@ function youtTubeutil() {
         });
 
         existingFiles.forEach(function (file) {
-            if (file.status == "IN_PROGRESS") {
-                changeStatus(file.position, "ABORTED");
+            if (file.status == "IN_PROGRESS" || file.status == "STOPPED") {
+                changeStatus(file.videoId, "ABORTED");
             }
         });
     }
@@ -119,9 +120,9 @@ function isVideoExistInStream(video_id) {
     return true;
 }
 
-function createMp3File(video_id, title, url, output) {
+function createMp3File(videoId, title, url, output) {
 
-    var mp3file = new Audiofile(video_id, title, url, '0%', '', output, 'IN_PROGRESS');
+    var mp3file = new Audiofile(videoId, title, url, '0%', 'IN_PROGRESS', output);
 
     existingFiles.push(mp3file);
 
@@ -130,7 +131,7 @@ function createMp3File(video_id, title, url, output) {
 function startDownload(info, url, event) {
 
     const video = ytdl(url, { filter: 'audioonly' });
-    var title = info.title.replace(/[\\/:"*?<>|]/g, '');
+    const title = info.title.replace(/[\\/:"*?<>|]/g, '');
 
     if (!isValidLink(info.video_id, event)) {
         event.sender.send('addingLink', { "linkAdded": false, "linkExists": true });
@@ -147,11 +148,12 @@ function startDownload(info, url, event) {
     event.sender.send('addingLink', { "linkAdded": false, "linkExists": false });
 
     video.pipe(writeStream);
+
     changeStatus(info.video_id, "IN_PROGRESS");
 
     handleVideoEvents(video, event, info);
 
-    openedStreams.push({ "video_id": info.video_id, "stream": writeStream, "video": video, "output": output });
+    openedStreams.push({ "videoId": info.video_id, "stream": writeStream, "video": video, "output": output });
 }
 
 function handleVideoEvents(video, event, info) {
@@ -168,7 +170,6 @@ function handleVideoEvents(video, event, info) {
 
         if (isVideoExistInStore(info.video_id)) {
             setDownloadProgress(floatDownloaded, info.video_id);
-            
         }
 
         store.set("mp3files", existingFiles);
@@ -177,7 +178,7 @@ function handleVideoEvents(video, event, info) {
     });
 
     video.on('end', () => {
-        changeStatus(info.video_id, "COMPLETED", store);
+        changeStatus(info.video_id, "COMPLETED");
     });
 
 }
@@ -210,7 +211,7 @@ function removeVideoFromStream(video_id) {
 
 function getStreamIndexByVideoId(video_id) {
 
-    var streamIndex = openedStreams.findIndex((x => x.video_id === video_id));
+    var streamIndex = openedStreams.findIndex((x => x.videoId === video_id));
     return streamIndex;
 
 }
@@ -222,7 +223,7 @@ function getPathByVideoId(video_id) {
 
 function getStoreIndexByVideoId(video_id) {
 
-    var existingFilesIndex = existingFiles.findIndex((x => x.position === video_id));
+    var existingFilesIndex = existingFiles.findIndex((x => x.videoId === video_id));
     return existingFilesIndex;
 
 }

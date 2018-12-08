@@ -1,13 +1,13 @@
 class Audiofile {
 
-    constructor(position, name, url, progress, action, path, status) {
-        this.position = position;
+    constructor(videoId, name, url, progress, action, path, status) {
+        this.videoId = videoId;
         this.name = name;
         this.url = url;
         this.progress = progress;
-        this.action = action;
-        this.path = path;
         this.status = status;
+        this.path = path;
+        
     }
 
     set(attr, val) {
